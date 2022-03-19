@@ -251,5 +251,70 @@ function callFunc(address payable _to) public payable{
  - `msg.value`는 보낸 Ether액
 
 
+#### - Enum
 
+```js
+enum ResultMsg {
+    Success,
+    Fail,
+    Error
+}
 
+ResultMsg rm;
+
+constructor(){
+    rm = ResultMsg.Success;
+}
+
+function doSomething(){
+    require(rm=ResultMsg.Success, "something is failed");
+}
+```
+
+#### - Interface
+
+external로 표시하고 enum, struct 생성 가능
+
+변수X, 생성자X
+
+```js
+interface ItemInfo{
+    struct item {
+        String name;
+        uint256 price;
+    }
+    function addItem(string memory _name, uint256 _price) external;
+    function getItem(uint _index) external view returns(item memory);
+}
+
+contract ActionHere is ItemInfo{
+    item[] public itemList;
+    function addItem(string memory _name, uint256 _price) override public{
+        itemList.push(item(_name, _price));
+    }
+    function getItem(uint256 _index) override public view returns(item memory){
+        return itemList[_index];
+    }
+}
+```
+
+#### -Libray
+
+fallback 불가, payable 불가, 그러므로 Ether를 받을 수 없음
+
+```js
+library Math{
+    function add(uint64 a, uint64 b) internal pure returns (uint8){
+        return a + b;
+    }
+}
+
+contract Usage{
+    using Math for uint64;
+    uint64 public num;
+
+    function do(uint64 _n1, uint64 _n2) public {
+        num = _n1.add(_n2)
+    }
+}
+```

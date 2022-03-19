@@ -1,6 +1,6 @@
 # :question: address와 address payable의 차이
 
-# :question: 변수에 address payable이 있고 함수에도 payable이 붙여있음
+Ether를 받냐 안받냐의 차이
 
 # :question: 스마트 컨트렉트 레이아웃 구성 순서
 
@@ -97,3 +97,10 @@ private
 순수하게 이더만 받을 때 사용
 
 `fallback`은 불려진 함수가 없을 때, 함수를 실행하면서 이더를 보낼 때
+
+
+# :question: delegate call
+
+여러 스마트 컨트렉트로 호출이 연계되어 있더라도 `msg.sender`가 본래 호출한 사용자가 됨
+
+upgradable smartcontract pattern
