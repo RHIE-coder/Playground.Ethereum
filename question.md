@@ -44,8 +44,6 @@ internal
 
 private
 
-암기 : 
-
 ## # Function Declaration
 
 0. `function` keyword
