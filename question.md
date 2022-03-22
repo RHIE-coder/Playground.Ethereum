@@ -102,3 +102,15 @@ private
 여러 스마트 컨트렉트로 호출이 연계되어 있더라도 `msg.sender`가 본래 호출한 사용자가 됨
 
 upgradable smartcontract pattern
+
+# :question: deference between assert() and require()
+
+https://medium.com/blockchannel/the-use-of-revert-assert-and-require-in-solidity-and-the-new-revert-opcode-in-the-evm-1a3a7990e06e
+
+# :question: ABI Encoding
+
+https://ichi.pro/ko/solidity-0-4-24ui-abi-inkoding-gineung-eun-mueos-ibnikka-212931784334568
+
+# :question: Remix IDE input Tuple arguments
+
+https://remix-ide.readthedocs.io/en/latest/udapp.html

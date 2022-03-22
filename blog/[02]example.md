@@ -11,7 +11,7 @@ https://solidity-by-example.org/
 
 ### :key: Hello World
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >= 0.8.10 <0.9.0;
 
@@ -26,7 +26,7 @@ contract HelloWorld {
 
 ## :key: First Application
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -56,7 +56,7 @@ contract Counter {
 
 ### :key: Prmitive Data Types
 
-```s
+```js
 // SPDX-License-Identifer: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -133,7 +133,7 @@ Solidity에는 3가지 타입의 변수들이 존재한다.
 ### - global
  - 블록체인에 대한 정보를 제공함
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -156,7 +156,7 @@ contract Variables {
 
 ### :key: Constants
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -175,7 +175,7 @@ contract Constants {
 
 immutable 변수는 constant와 비슷하다. 그러나 immutable로 선언된 변수는 생성자(constructor) 함수에서 수정될 수 있으며 이후 수정할 수 없다.
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -201,7 +201,7 @@ To write or update a state variable you need to send a transaction.
 
 On the other hand, you can read state variables, for free, without any transaction fee.
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -231,7 +231,7 @@ Transactions are paid with ether.
 
 Similar to how one dollar is equal to 100 cent, one ether is equal to 1018 wei.
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -271,7 +271,7 @@ There are 2 upper bounds to the amount of gas you can spend
  - gas limit (max amount of gas you're willing to use for your transaction, set by you)
  - block gas limit (max amount of gas allowed in a block, set by the network)
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -298,7 +298,7 @@ contract Gas {
 
 ### :key: If / Else
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -329,7 +329,7 @@ Solidity는 `for`, `while`, 그리고 `do while`문을 지원한다.
 
 그러나 `while`과 `do while`은 거의 쓰이지 않는다.
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -366,7 +366,7 @@ valueType can be any type including another mapping or an array.
 
 Mappings are not iterable.
 
-```s
+```js
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -1657,6 +1657,667 @@ contract SendEther {
 <br>
 
 ### :key: Fallback
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+contract Fallback {
+    event Log(uint gas);
+
+    // Fallback function must be declared as external.
+    fallback() external payable {
+        // send / transfer (forwards 2300 gas to this fallback function)
+        // call (forwards all of the gas)
+        emit Log(gasleft());
+    }
+
+    // Helper function to check the balance of this contract
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
+
+contract SendToFallback {
+    function transferToFallback(address payable _to) public payable {
+        _to.transfer(msg.value);
+    }
+
+    function callFallback(address payable _to) public payable {
+        (bool sent, ) = _to.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+
+### :key: Call
+
+call is a low level function to interact with other contracts.
+
+This is the recommended method to use when you're just sending Ether via calling the fallback function.
+
+However it is not the recommend way to call existing functions.
+
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+contract Receiver {
+    event Received(address caller, uint amount, string message);
+
+    fallback() external payable {
+        emit Received(msg.sender, msg.value, "Fallback was called");
+    }
+
+    function foo(string memory _message, uint _x) public payable returns (uint) {
+        emit Received(msg.sender, msg.value, _message);
+
+        return _x + 1;
+    }
+}
+
+contract Caller {
+    event Response(bool success, bytes data);
+
+    // Let's imagine that contract B does not have the source code for
+    // contract A, but we do know the address of A and the function to call.
+    function testCallFoo(address payable _addr) public payable {
+        // You can send ether and specify a custom gas amount
+        (bool success, bytes memory data) = _addr.call{value: msg.value, gas: 5000}(
+            abi.encodeWithSignature("foo(string,uint256)", "call foo", 123)
+        );
+
+        emit Response(success, data);
+    }
+
+    // Calling a function that does not exist triggers the fallback function.
+    function testCallDoesNotExist(address _addr) public {
+        (bool success, bytes memory data) = _addr.call(
+            abi.encodeWithSignature("doesNotExist()")
+        );
+
+        emit Response(success, data);
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Delegatecall
+
+delegatecall is a low level function similar to call.
+
+When contract A executes delegatecall to contract B, B's code is excuted
+
+with contract A's storage, msg.sender and msg.value.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+// NOTE: Deploy this contract first
+contract B {
+    // NOTE: storage layout must be the same as contract A
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(uint _num) public payable {
+        num = _num;
+        sender = msg.sender;
+        value = msg.value;
+    }
+}
+
+contract A {
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(address _contract, uint _num) public payable {
+        // A's storage is set, B is not modified.
+        (bool success, bytes memory data) = _contract.delegatecall(
+            abi.encodeWithSignature("setVars(uint256)", _num)
+        );
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Function Selector
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+/*  
+When a function is called, the first 4 bytes of calldata specifies which function to call.
+
+This 4 bytes is called a function selector.
+
+The first 4 bytes returned from abi.encodeWithSignature(....) is the function selector.
+
+Perhaps you can save a tiny amount of gas if you precompute and inline the function selector in your code?
+*/
+
+// Here is how the function selector is computed.
+contract FunctionSelector {
+    /*
+    "transfer(address,uint256)"
+    0xa9059cbb
+    "transferFrom(address,address,uint256)"
+    0x23b872dd
+    */
+    function getSelector(string calldata _func) external pure returns (bytes4) {
+        return bytes4(keccak256(bytes(_func)));
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Calling Other Contract
+
+Contract can call other contracts in 2 ways.
+
+The easiest way to is to just call it, like A.foo(x, y, z).
+
+Another way to call other contracts is to use the low-level call. This method is not recommended.
+
+```js
+contract Callee {
+    uint public x;
+    uint public value;
+
+    function setX(uint _x) public returns (uint) {
+        x = _x;
+        return x;
+    }
+
+    function setXandSendEther(uint _x) public payable returns (uint, uint) {
+        x = _x;
+        value = msg.value;
+
+        return (x, value);
+    }
+}
+
+contract Caller {
+    function setX(Callee _callee, uint _x) public {
+        uint x = _callee.setX(_x);
+    }
+
+    function setXFromAddress(address _addr, uint _x) public {
+        Callee callee = Callee(_addr);
+        callee.setX(_x);
+    }
+
+    function setXandSendEther(Callee _callee, uint _x) public payable {
+        (uint x, uint value) = _callee.setXandSendEther{value: msg.value}(_x);
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Contract that Creates other Contracts
+
+Contracts can be created by other contracts using the new keyword. Since 0.8.0, new keyword supports create2 feature by specifying salt options.
+
+
+```js
+contract Car {
+    address public owner;
+    string public model;
+    address public carAddr;
+
+    constructor(address _owner, string memory _model) payable {
+        owner = _owner;
+        model = _model;
+        carAddr = address(this);
+    }
+}
+
+contract CarFactory {
+    Car[] public cars;
+
+    function create(address _owner, string memory _model) public {
+        Car car = new Car(_owner, _model);
+        cars.push(car);
+    }
+
+    function createAndSendEther(address _owner, string memory _model) public payable {
+        Car car = (new Car){value: msg.value}(_owner, _model);
+        cars.push(car);
+    }
+
+    function create2(
+        address _owner,
+        string memory _model,
+        bytes32 _salt
+    ) public {
+        Car car = (new Car){salt: _salt}(_owner, _model);
+        cars.push(car);
+    }
+
+    function create2AndSendEther(
+        address _owner,
+        string memory _model,
+        bytes32 _salt
+    ) public payable {
+        Car car = (new Car){value: msg.value, salt: _salt}(_owner, _model);
+        cars.push(car);
+    }
+
+    function getCar(uint _index)
+        public
+        view
+        returns (
+            address owner,
+            string memory model,
+            address carAddr,
+            uint balance
+        )
+    {
+        Car car = cars[_index];
+
+        return (car.owner(), car.model(), car.carAddr(), address(car).balance);
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Try/Catch
+
+try / catch can only catch errors from external function calls and contract creation.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+// External contract used for try / catch examples
+contract Foo {
+    address public owner;
+
+    constructor(address _owner) {
+        require(_owner != address(0), "invalid address");
+        assert(_owner != 0x0000000000000000000000000000000000000001);
+        owner = _owner;
+    }
+
+    function myFunc(uint x) public pure returns (string memory) {
+        require(x != 0, "require failed");
+        return "my func was called";
+    }
+}
+
+contract Bar {
+    event Log(string message);
+    event LogBytes(bytes data);
+
+    Foo public foo;
+
+    constructor() {
+        // This Foo contract is used for example of try catch with external call
+        foo = new Foo(msg.sender);
+    }
+
+    // Example of try / catch with external call
+    // tryCatchExternalCall(0) => Log("external call failed")
+    // tryCatchExternalCall(1) => Log("my func was called")
+    function tryCatchExternalCall(uint _i) public {
+        try foo.myFunc(_i) returns (string memory result) {
+            emit Log(result);
+        } catch {
+            emit Log("external call failed");
+        }
+    }
+
+    // Example of try / catch with contract creation
+    // tryCatchNewContract(0x0000000000000000000000000000000000000000) => Log("invalid address")
+    // tryCatchNewContract(0x0000000000000000000000000000000000000001) => LogBytes("")
+    // tryCatchNewContract(0x0000000000000000000000000000000000000002) => Log("Foo created")
+    function tryCatchNewContract(address _owner) public {
+        try new Foo(_owner) returns (Foo foo) {
+            // you can use variable foo here
+            emit Log("Foo created");
+        } catch Error(string memory reason) {
+            // catch failing revert() and require()
+            emit Log(reason);
+        } catch (bytes memory reason) {
+            // catch failing assert()
+            emit LogBytes(reason);
+        }
+    }
+}
+```
+<br>
+<br>
+<br>
+
+### :key: Import
+
+You can import local and external files in Solidity.
+
+
+ - `Foo.sol`
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+struct Point {
+    uint x;
+    uint y;
+}
+
+error Unauthorized(address caller);
+
+function add(uint x, uint y) pure returns (uint) {
+    return x + y;
+}
+
+contract Foo {
+    string public name = "Foo";
+}
+```
+
+ - `import.sol`
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+// import Foo.sol from current directory
+import "./Foo.sol";
+
+// import {symbol1 as alias, symbol2} from "filename";
+import {Unauthorized, add as func, Point} from "./Foo.sol";
+
+contract Import {
+    // Initialize Foo.sol
+    Foo public foo = new Foo();
+
+    // Test Foo.sol by getting it's name.
+    function getFooName() public view returns (string memory) {
+        return foo.name();
+    }
+}
+```
+
+#### - You can also import from GitHub by simply copying the url
+
+```js
+// https://github.com/owner/repo/blob/branch/path/to/Contract.sol
+import "https://github.com/owner/repo/blob/branch/path/to/Contract.sol";
+
+// Example import ECDSA.sol from openzeppelin-contract repo, release-v4.5 branch
+// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.5/contracts/utils/cryptography/ECDSA.sol
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.5/contracts/utils/cryptography/ECDSA.sol";
+```
+
+<br>
+<br>
+<br>
+
+### :key: Library
+
+Libraries are similar to contracts, but you can't declare any state variable and you can't send ether.
+
+A library is embedded into the contract if all library functions are internal.
+
+Otherwise the library must be deployed and then linked before the contract is deployed.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+library SafeMath {
+    function add(uint x, uint y) internal pure returns (uint) {
+        uint z = x + y;
+        require(z >= x, "uint overflow");
+
+        return z;
+    }
+}
+
+library Math {
+    function sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
+        // else z = 0 (default value)
+    }
+}
+
+contract TestSafeMath {
+    using SafeMath for uint;
+
+    uint public MAX_UINT = 2**256 - 1;
+
+    function testAdd(uint x, uint y) public pure returns (uint) {
+        return x.add(y);
+    }
+
+    function testSquareRoot(uint x) public pure returns (uint) {
+        return Math.sqrt(x);
+    }
+}
+
+// Array function to delete element at index and re-organize the array
+// so that their are no gaps between the elements.
+library Array {
+    function remove(uint[] storage arr, uint index) public {
+        // Move the last element into the place to delete
+        require(arr.length > 0, "Can't remove from empty array");
+        arr[index] = arr[arr.length - 1];
+        arr.pop();
+    }
+}
+
+contract TestArray {
+    using Array for uint[];
+
+    uint[] public arr;
+
+    function testArrayRemove() public {
+        for (uint i = 0; i < 3; i++) {
+            arr.push(i);
+        }
+
+        arr.remove(1);
+
+        assert(arr.length == 2);
+        assert(arr[0] == 0);
+        assert(arr[1] == 2);
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Assembly
+
+Solidity provides an option to use assembly language to write inline assembly within Solidity source code. We can also write a standalone assembly code which then be converted to bytecode. Standalone Assembly is an intermediate language for a Solidity compiler and it converts the Solidity code into a Standalone Assembly and then to byte code. We can used the same language used in Inline Assembly to write code in a Standalone assembly.
+
+`Inline Assembly`
+Inline assembly code can be interleaved within Solidity code base to have more fine-grain control over EVM and is used especially while writing the library functions.
+
+An assembly code is written under assembly { ... } block.
+
+`Example`
+Try the following code to understand how a Library works in Solidity.
+
+```js
+pragma solidity ^0.5.0;
+
+library Sum {   
+   function sumUsingInlineAssembly(uint[] memory _data) public pure returns (uint o_sum) {
+      for (uint i = 0; i < _data.length; ++i) {
+         assembly {
+            o_sum := add(o_sum, mload(add(add(_data, 0x20), mul(i, 0x20))))
+         }
+      }
+   }
+}
+contract Test {
+   uint[] data;
+   
+   constructor() public {
+      data.push(1);
+      data.push(2);
+      data.push(3);
+      data.push(4);
+      data.push(5);
+   }
+   function sum() external view returns(uint){      
+      return Sum.sumUsingInlineAssembly(data);
+   }
+}
+```
+
+
+<br>
+<br>
+<br>
+
+
+### :key: ABI Decode
+
+abi.encode encodes data into bytes.
+
+abi.decode decodes bytes back into data.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+/*  
+    Remix IDE
+    x : 111
+    addr : 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
+    arr : [1, 2, 3, 4]
+    myStruct : ["aaa", [10,20]]
+*/
+contract AbiDecode {
+    struct MyStruct {
+        string name;
+        uint[2] nums;
+    }
+
+    function encode(
+        uint x,
+        address addr,
+        uint[] calldata arr,
+        MyStruct calldata myStruct
+    ) external pure returns (bytes memory) {
+        return abi.encode(x, addr, arr, myStruct);
+    }
+
+    function decode(bytes calldata data)
+        external
+        pure
+        returns (
+            uint x,
+            address addr,
+            uint[] memory arr,
+            MyStruct memory myStruct
+        )
+    {
+        // (uint x, address addr, uint[] memory arr, MyStruct myStruct) = ...
+        (x, addr, arr, myStruct) = abi.decode(data, (uint, address, uint[], MyStruct));
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: Hashing with Keccak256
+
+keccak256 computes the Keccak-256 hash of the input.
+
+Some use cases are:
+
+ - Creating a deterministic unique ID from a input
+ - Commit-Reveal scheme
+ - Compact cryptographic signature (by signing the hash instead of a larger input)
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+contract HashFunction {
+    function hash(
+        string memory _text,
+        uint _num,
+        address _addr
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_text, _num, _addr));
+    }
+
+    // Example of hash collision
+    // Hash collision can occur when you pass more than one dynamic data type
+    // to abi.encodePacked. In such case, you should use abi.encode instead.
+    function collision(string memory _text, string memory _anotherText)
+        public
+        pure
+        returns (bytes32)
+    {
+        // encodePacked(AAA, BBB) -> AAABBB
+        // encodePacked(AA, ABBB) -> AAABBB
+        return keccak256(abi.encodePacked(_text, _anotherText));
+    }
+}
+
+contract GuessTheMagicWord {
+
+    bytes32 public answer =
+        0x60298f78cc0b47170ba79c10aa3851d7648bd96f2f8e46a19dbc777c36fb0c00;
+
+    event Log(bytes32 _b);
+
+    // Magic word is "Solidity"
+    function guess(string memory _word) public returns (bool) {
+        emit Log(keccak256(abi.encodePacked(_word)));
+        return keccak256(abi.encodePacked(_word)) == answer;
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+### :key: 
+
 
 <hr>
 <br>
