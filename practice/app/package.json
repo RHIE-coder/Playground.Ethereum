@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "web3": "^1.7.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.7.0"
   }
 }

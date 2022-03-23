@@ -2316,7 +2316,160 @@ contract GuessTheMagicWord {
 <br>
 <br>
 
-### :key: 
+### :key: Verify Signature
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+/* Signature Verification
+
+How to Sign and Verify
+# Signing
+1. Create message to sign
+2. Hash the message
+3. Sign the hash (off chain, keep your private key secret)
+
+# Verify
+1. Recreate hash from the original message
+2. Recover signer from signature and hash
+3. Compare recovered signer to claimed signer
+*/
+
+contract VerifySignature {
+    /* 1. Unlock MetaMask account
+    ethereum.enable()
+
+        OR Use Node.js on own local environment
+------------------------------------------------------------------------------------------------
+    const Web3 = require("web3");
+    const fs = require('fs');
+
+    (async()=>{
+        const web3 = new Web3();
+        web3.setProvider(new web3.providers.HttpProvider("http://localhost:7545"));
+        const practiceContract = web3.eth.contract("input here the abi");
+        const practice = practiceContract.at('input here the address of smart contract');
+    })()
+------------------------------------------------------------------------------------------------
+    */
+
+    /* 2. Get message hash to sign
+    getMessageHash(
+        0x9660Dc916D4E34A7F10b2717893B33aD19D97D58,
+        10,
+        "coffee and donuts",
+        1234
+    )
+
+    hash = "0x1760a2ca7b8562da92e32d8458d4b9344106dc36fc0aa0371ed78f8fc0cdb66b"
+
+    getEthSignedMessageHash()를 사용하기 전의 사전 단계
+    */
+    function getMessageHash(
+        address _to,
+        uint _amount,
+        string memory _message,
+        uint _nonce
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_to, _amount, _message, _nonce));
+    }
+
+    /* 3. Sign message hash
+    # using browser
+    // account = "copy paste account of signer here"
+    // ethereum.request({ method: "personal_sign", params: [account, hash]}).then(console.log)
+    account = "0x3bd25fcC7ACab98523D2fB4F514aBa303B298b75"
+    ethereum.request({ method: "personal_sign", params: [account, hash]}).then(console.log)
+
+    # using web3
+    web3.personal.sign(hash, web3.eth.defaultAccount, console.log)
+
+    Signature will be different for different accounts
+     - used account : 0x3bd25fcC7ACab98523D2fB4F514aBa303B298b75
+    0x2d0306bc7f9635b8ce2e9b8fbd55b356059a734e4f313439830f67e53cf1511e
+    */
+    function getEthSignedMessageHash(bytes32 _messageHash)
+        public
+        pure
+        returns (bytes32)
+    {
+        /*
+        Signature is produced by signing a keccak256 hash with the following format:
+        "\x19Ethereum Signed Message\n" + len(msg) + msg
+        */
+        return
+            keccak256(
+                abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash)
+            );
+    }
+
+    /* 4. Verify signature
+    signer = 0x3bd25fcC7ACab98523D2fB4F514aBa303B298b75
+    to = 0x9660Dc916D4E34A7F10b2717893B33aD19D97D58
+    amount = 10
+    message = "coffee and donuts"
+    nonce = 1234
+    signature =
+        0x2d0306bc7f9635b8ce2e9b8fbd55b356059a734e4f313439830f67e53cf1511e
+    */
+    function verify(
+        address _signer,
+        address _to,
+        uint _amount,
+        string memory _message,
+        uint _nonce,
+        bytes memory signature
+    ) public pure returns (bool) {
+        bytes32 messageHash = getMessageHash(_to, _amount, _message, _nonce);
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+
+        return recoverSigner(ethSignedMessageHash, signature) == _signer;
+    }
+
+    function recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature)
+        public
+        pure
+        returns (address)
+    {
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+
+        return ecrecover(_ethSignedMessageHash, v, r, s);
+    }
+
+    function splitSignature(bytes memory sig)
+        public
+        pure
+        returns (
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
+    {
+        require(sig.length == 65, "invalid signature length");
+
+        assembly {
+            /*
+            First 32 bytes stores the length of the signature
+
+            add(sig, 32) = pointer of sig + 32
+            effectively, skips first 32 bytes of signature
+
+            mload(p) loads next 32 bytes starting at the memory address p into memory
+            */
+
+            // first 32 bytes, after the length prefix
+            r := mload(add(sig, 32))
+            // second 32 bytes
+            s := mload(add(sig, 64))
+            // final byte (first byte of the next 32 bytes)
+            v := byte(0, mload(add(sig, 96)))
+        }
+
+        // implicitly return (r, s, v)
+    }
+}
+```
 
 
 <hr>
