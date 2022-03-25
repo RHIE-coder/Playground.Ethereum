@@ -6,8 +6,51 @@ const url = "http://localhost:8545";
 const account1 = "0x5fD31f16Da87cCB3D34CEC4F08FE4be090B8F04D";
 const account2 = "0x7d145076c8124BD596D730552Bc0Bc98ceE83030";
 
-(async () => {
 
+
+// const {EtherHttpWeb3} = require("./lib/ether-http-web3");
+class Args {
+
+}
+
+class EtherHttpWeb3Args{
+
+    constructor(args){
+        if(!args.target) throw new TypeError("invalid argument - target");
+        if(!args.contract_address) throw new TypeError("invalid argument - contract_address");
+        if(!args.abi_name) throw new TypeError("invalid argument - abi_name");
+        
+        this.args = args;
+
+        const handler = {
+            apply: function(target, thisArg, argumentList) {
+                console.log("proxy~!");
+                console.log(thisArg);
+                console.log(argumentList);
+
+                return "Hello World";
+            }
+        }
+
+        this.test = new Proxy(this.test, handler);
+    }
+
+    test(t){
+        console.log(t);
+    }
+}
+
+
+
+(async () => {
+    const e = new EtherHttpWeb3Args({
+        target: 1,
+        contract_address: 2,
+        abi_name: 3,
+    })
+
+
+    console.log(Reflect.get(e, 'test')("hegege"));
 })()
 
 
@@ -26,8 +69,6 @@ async function update(){
 
 
 async function dump() {
-
-
     const practice = practiceContract.at(smartContractAddress);
     console.log(practice);
 }

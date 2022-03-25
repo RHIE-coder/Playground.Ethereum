@@ -2342,15 +2342,40 @@ contract VerifySignature {
 
         OR Use Node.js on own local environment
 ------------------------------------------------------------------------------------------------
+
     const Web3 = require("web3");
     const fs = require('fs');
 
+    const smartContractAddress = '0x0429F570F09Cd64729570ffdE39C0007Ee598dc6';
+    const url = "http://localhost:8545";
+    const account1 = "0x5fD31f16Da87cCB3D34CEC4F08FE4be090B8F04D";
+    const account2 = "0x7d145076c8124BD596D730552Bc0Bc98ceE83030";
+
     (async()=>{
-        const web3 = new Web3();
-        web3.setProvider(new web3.providers.HttpProvider("http://localhost:7545"));
-        const practiceContract = web3.eth.contract("input here the abi");
-        const practice = practiceContract.at('input here the address of smart contract');
+        const web3 = new Web3(new Web3.providers.HttpProvider(url));
+        const abi = JSON.parse(await fs.readFile("../build/contracts/practice.json"));
+        // const practiceContract = new web3.eth.Contract("input here the ABI Object");
+        const practiceContract = new web3.eth.Contract(abi, smartContractAddress);
+        // const practice = practiceContract.at('input here the address of smart contract');
     })()
+
+------------------------------------------------------------------------------------------------
+        ------------------------------
+        Usage MetaMask by Code Example
+        ------------------------------
+    import Web3 from 'web3';
+
+    const web3 = new Web3(window.ethereum);
+    await window.ethereum.enable();
+
+    const NameContract = web3.eth.Contract(contract_abi, contract_address);
+
+------------------------------------------------------------------------------------------------
+        -------------------------------------------
+        Code Example: Usage Infura API with WEB3 JS 
+        -------------------------------------------
+    const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/INFURA_ACCESS_TOKEN:8545'))
+
 ------------------------------------------------------------------------------------------------
     */
 
