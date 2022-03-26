@@ -8,38 +8,7 @@ const account2 = "0x7d145076c8124BD596D730552Bc0Bc98ceE83030";
 
 
 
-// const {EtherHttpWeb3} = require("./lib/ether-http-web3");
-class Args {
-
-}
-
-class EtherHttpWeb3Args{
-
-    constructor(args){
-        if(!args.target) throw new TypeError("invalid argument - target");
-        if(!args.contract_address) throw new TypeError("invalid argument - contract_address");
-        if(!args.abi_name) throw new TypeError("invalid argument - abi_name");
-        
-        this.args = args;
-
-        const handler = {
-            apply: function(target, thisArg, argumentList) {
-                console.log("proxy~!");
-                console.log(thisArg);
-                console.log(argumentList);
-
-                return "Hello World";
-            }
-        }
-
-        this.test = new Proxy(this.test, handler);
-    }
-
-    test(t){
-        console.log(t);
-    }
-}
-
+const { EtherHttpWeb3Args, EtherHttpWeb3 } = require("./lib/node-web3");
 
 
 (async () => {
@@ -47,10 +16,10 @@ class EtherHttpWeb3Args{
         target: 1,
         contract_address: 2,
         abi_name: 3,
-    })
-
-
-    console.log(Reflect.get(e, 'test')("hegege"));
+    });
+    EtherHttpWeb3Args.getClassName();
+    e.validation();
+    const w = new EtherHttpWeb3(e);
 })()
 
 
@@ -63,12 +32,4 @@ async function update(){
     const result = await practiceContract.methods.getMessageHash(account2, 10, "coffee and donuts", 1234).call();
     // const result = await practiceContract.methods.getMessageHash(account2, 10, "coffee and donuts", 1234).send({from:account1});
     console.log(result);
-}
-
-/////////////////////////////////////////////////////////////////
-
-
-async function dump() {
-    const practice = practiceContract.at(smartContractAddress);
-    console.log(practice);
 }
