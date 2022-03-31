@@ -1,0 +1,17 @@
+{
+  "name": "01_typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ts-init": "tsc --init",
+    "ts-build": "tsc",
+    "start": "node ./build/sandbox.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.6.3"
+  }
+}
