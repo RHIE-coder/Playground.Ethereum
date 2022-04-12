@@ -2,7 +2,7 @@
 
 ### :key: installation
 
-```js
+```bash
 npm install typescript --save-dev
 ```
 

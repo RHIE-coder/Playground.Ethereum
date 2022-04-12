@@ -1,15 +1,19 @@
-# :dart: Examples
+# 🎯 Examples
 
-## :lock: Grammar Basics
+## 🔒 Grammar Basics
 
-### :key: Reference
+### 🔑 Reference
 
 https://www.tutorialspoint.com/solidity/solidity_interfaces.htm
 
 https://solidity-by-example.org/
 
 
-### :key: Hello World
+<br>
+<br>
+<br>
+
+### 🔑 Hello World
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -24,7 +28,7 @@ contract HelloWorld {
 <br>
 <br>
 
-## :key: First Application
+### 🔑 First Application
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -54,7 +58,7 @@ contract Counter {
 <br>
 <br>
 
-### :key: Prmitive Data Types
+### 🔑 Prmitive Data Types
 
 ```js
 // SPDX-License-Identifer: MIT
@@ -118,7 +122,7 @@ contract Primitives {
 <br>
 <br>
 
-### :key: Variables
+### 🔑 Variables
 
 Solidity에는 3가지 타입의 변수들이 존재한다.
 
@@ -154,7 +158,7 @@ contract Variables {
 <br>
 <br>
 
-### :key: Constants
+### 🔑 Constants
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -171,7 +175,7 @@ contract Constants {
 <br>
 <br>
 
-### :key: Immutable
+### 🔑 Immutable
 
 immutable 변수는 constant와 비슷하다. 그러나 immutable로 선언된 변수는 생성자(constructor) 함수에서 수정될 수 있으며 이후 수정할 수 없다.
 
@@ -195,7 +199,7 @@ contract Immutable {
 <br>
 <br>
 
-### :key: State Variable
+### 🔑 State Variable
 
 To write or update a state variable you need to send a transaction.
 
@@ -225,7 +229,7 @@ contract SimpleStorage {
 <br>
 <br>
 
-### :key: Ether and Wei
+### 🔑 Ether and Wei
 
 Transactions are paid with ether.
 
@@ -250,7 +254,7 @@ contract EtherUnits {
 <br>
 <br>
 
-### :key: Gas
+### 🔑 Gas
 
 How much `ether` do you need to pay for a transaction?
 
@@ -296,7 +300,7 @@ contract Gas {
 <br>
 <br>
 
-### :key: If / Else
+### 🔑 If / Else
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -323,7 +327,7 @@ contract IfElse {
 <br>
 <br>
 
-### :key: For and While Loop
+### 🔑 For and While Loop
 
 Solidity는 `for`, `while`, 그리고 `do while`문을 지원한다.
 
@@ -356,7 +360,7 @@ contract Loop {
 <br>
 <br>
 
-### :key: Mapping
+### 🔑 Mapping
 
 `mapping(keyType => valueType)`
 
@@ -419,7 +423,7 @@ contract NestedMapping {
 <br>
 <br>
 
-### :key: Array
+### 🔑 Array
 
 Array can have a compile-time fixed size or a dynamic size.
 
@@ -563,7 +567,7 @@ contract ArrayReplaceFromEnd {
 <br>
 <br>
 
-### :key: Enum
+### 🔑 Enum
 
 Enums can be declared outside of a contract.
 
@@ -652,7 +656,7 @@ contract Enum {
 <br>
 <br>
 
-### :key: Structs
+### 🔑 Structs
 
 You can define your own type by creating a struct.
 
@@ -743,7 +747,7 @@ contract Todos {
 <br>
 <br>
 
-### :key: Data Locations - Storage, Memory and Calldata
+### 🔑 Data Locations - Storage, Memory and Calldata
 
 Variables are declared as either storage, memory or calldata to explicitly specify the location of the data.
 
@@ -806,7 +810,7 @@ https://www.reddit.com/r/ethdev/comments/p6a00k/when_to_use_memory_storage_and_c
 <br>
 <br>
 
-### :key: Functions
+### 🔑 Functions
 
 There are several ways to return outputs from a function.
 
@@ -898,7 +902,7 @@ contract Function {
 <br>
 <br>
 
-### :key: View and Pure Functions
+### 🔑 View and Pure Functions
 
 View function declares that no state will be changed.
 
@@ -927,7 +931,7 @@ contract ViewAndPure {
 <br>
 <br>
 
-### :key: Error
+### 🔑 Error
 
 `require` is used to validate inputs and conditions before execution.
 `revert` is similar to require. See the code below for details.
@@ -1009,7 +1013,7 @@ contract Account {
 }
 ```
 
-### :key: Function Modifier
+### 🔑 Function Modifier
 
 Modifiers are code that can be run before and / or after a function call.
 
@@ -1075,7 +1079,7 @@ contract FunctionModifier {
 <br>
 <br>
 
-### :key: Events
+### 🔑 Events
 
 Events allow logging to the Ethereum blockchain. Some use cases for events are:
 
@@ -1107,7 +1111,7 @@ topic will consist of the event signature
 <br>
 <br>
 
-### :key: Constructor
+### 🔑 Constructor
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -1169,7 +1173,7 @@ contract E is X, Y {
 <br>
 <br>
 
-### :key: Inheritance
+### 🔑 Inheritance
 
 Solidity supports multiple inheritance. Contracts can inherit other contract by using the is keyword.
 
@@ -1249,7 +1253,7 @@ contract F is A, B {
 <br>
 <br>
 
-### :key: Shadowing Inherited State Variables
+### 🔑 Shadowing Inherited State Variables
 
 ```js
 contract A {
@@ -1280,7 +1284,7 @@ contract C is A {
 <br>
 <br>
 
-### :key: Calling Parent Contracts
+### 🔑 Calling Parent Contracts
 
 By using the keyword super, all of the immediate parent contracts will be called.
 
@@ -1357,7 +1361,7 @@ contract D is B, C {
 <br>
 <br>
 
-### :key: Visibility
+### 🔑 Visibility
 
 public - any contract and account can call
 private - only inside the contract that defines the function
@@ -1438,7 +1442,7 @@ contract Child is Base {
 <br>
 <br>
 
-### :key: Interface
+### 🔑 Interface
 
  - cannot have any functions implemented
  - can inherit from other interfaces
@@ -1479,7 +1483,7 @@ contract Main {
 <br>
 <br>
 
-### :key: Abstract 
+### 🔑 Abstract 
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -1519,7 +1523,7 @@ contract Main {
 <br>
 <br>
 
-### :key: Payable
+### 🔑 Payable
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -1571,7 +1575,7 @@ contract Payable {
 <br>
 <br>
 
-### :key: Sending Ether (transfer, send, call)
+### 🔑 Sending Ether (transfer, send, call)
 
 transfer (2300 gas, throws error)
 send (2300 gas, returns bool)
@@ -1656,7 +1660,7 @@ contract SendEther {
 <br>
 <br>
 
-### :key: Fallback
+### 🔑 Fallback
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -1695,7 +1699,7 @@ contract SendToFallback {
 <br>
 
 
-### :key: Call
+### 🔑 Call
 
 call is a low level function to interact with other contracts.
 
@@ -1751,7 +1755,7 @@ contract Caller {
 <br>
 <br>
 
-### :key: Delegatecall
+### 🔑 Delegatecall
 
 delegatecall is a low level function similar to call.
 
@@ -1795,7 +1799,7 @@ contract A {
 <br>
 <br>
 
-### :key: Function Selector
+### 🔑 Function Selector
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -1828,7 +1832,7 @@ contract FunctionSelector {
 <br>
 <br>
 
-### :key: Calling Other Contract
+### 🔑 Calling Other Contract
 
 Contract can call other contracts in 2 ways.
 
@@ -1874,7 +1878,7 @@ contract Caller {
 <br>
 <br>
 
-### :key: Contract that Creates other Contracts
+### 🔑 Contract that Creates other Contracts
 
 Contracts can be created by other contracts using the new keyword. Since 0.8.0, new keyword supports create2 feature by specifying salt options.
 
@@ -1944,7 +1948,7 @@ contract CarFactory {
 <br>
 <br>
 
-### :key: Try/Catch
+### 🔑 Try/Catch
 
 try / catch can only catch errors from external function calls and contract creation.
 
@@ -2012,7 +2016,7 @@ contract Bar {
 <br>
 <br>
 
-### :key: Import
+### 🔑 Import
 
 You can import local and external files in Solidity.
 
@@ -2077,7 +2081,7 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.5
 <br>
 <br>
 
-### :key: Library
+### 🔑 Library
 
 Libraries are similar to contracts, but you can't declare any state variable and you can't send ether.
 
@@ -2162,7 +2166,7 @@ contract TestArray {
 <br>
 <br>
 
-### :key: Assembly
+### 🔑 Assembly
 
 Solidity provides an option to use assembly language to write inline assembly within Solidity source code. We can also write a standalone assembly code which then be converted to bytecode. Standalone Assembly is an intermediate language for a Solidity compiler and it converts the Solidity code into a Standalone Assembly and then to byte code. We can used the same language used in Inline Assembly to write code in a Standalone assembly.
 
@@ -2208,7 +2212,7 @@ contract Test {
 <br>
 
 
-### :key: ABI Decode
+### 🔑 ABI Decode
 
 abi.encode encodes data into bytes.
 
@@ -2260,7 +2264,7 @@ contract AbiDecode {
 <br>
 <br>
 
-### :key: Hashing with Keccak256
+### 🔑 Hashing with Keccak256
 
 keccak256 computes the Keccak-256 hash of the input.
 
@@ -2316,7 +2320,7 @@ contract GuessTheMagicWord {
 <br>
 <br>
 
-### :key: Verify Signature
+### 🔑 Verify Signature
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -2504,4 +2508,4 @@ contract VerifySignature {
 <br>
 <br>
 
-## :lock: ---
+## 🔒 ---
