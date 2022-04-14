@@ -80,7 +80,7 @@ contract Counter {
 <br>
 <br>
 
-## 🐥 First Application
+## 🐥 Primitive Data Types
 
 Here we introduce you to some primitive data types available in Solidity.
 
@@ -147,6 +147,7 @@ contract Primitives {
     address public defaultAddr; // 0x0000000000000000000000000000000000000000
 }
  ```
+###### Solidity does not have the concept of `typeof` or `isinstance`
 
 <br>
 <br>
@@ -228,9 +229,59 @@ contract Immutable {
 }
 ```
 
+### 🐣 Deep in mutability
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract Mutability {
+
+    uint[] public originArr = [1, 2, 3, 4, 5];
+
+    function checkBoolean() public pure returns(bool, bool){
+        bool originBool = true;
+        bool copyBool = originBool;
+        copyBool= false;
+        return (originBool, copyBool);
+    }
+
+    function checkInteger() public pure returns(uint, uint){
+        uint originInt = 100;
+        uint copyInt = originInt;
+        copyInt= 200;
+        return (originInt, copyInt);
+    }
+
+    function checkAddress() public pure returns(address, address){
+        address originAddr = 0xbFa1c6e350e4f74F27bC9668fb587AdE7F8dcBbE;
+        address copyAddr = originAddr;
+        copyAddr= 0xEBa43801C256Cc5a1f40d15a8dD26700F40bBdc3;
+        return (originAddr, copyAddr);
+    }
+
+    function checkString() public pure returns(string memory, string memory){
+        string memory originStr = "AAA";
+        string memory copyStr = originStr;
+        copyStr= "BBB";
+        return (originStr, copyStr);        
+    }
+
+    
+    function checkArray() public view returns(uint[] memory, uint[] memory){
+        uint[] memory copyArr = originArr;
+        copyArr[0] = 100;
+        return (originArr, copyArr);
+    }
+
+}
+```
+
 <br>
 <br>
 <br>
+
+
 
 ## 🐥 Reading and Writing to a State Variable
 
@@ -839,6 +890,105 @@ contract DataLocations {
     }
 }
 ```
+
+### 🐣 structs is not implemented when using `calldata`
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract Calldata {
+    struct MyStruct {
+        string name;
+        uint[2] nums;
+    }
+
+    event LogStruct(MyStruct);
+    event LogBytes(bytes);
+
+
+    // input: ["hello",[11,22]] --> lost string literal
+    function structInputAtCalldata(MyStruct calldata paramStruc) public returns(MyStruct memory){
+        emit LogStruct(paramStruc);
+        bytes memory b = abi.encode(paramStruc);
+        emit LogBytes(b);
+        MyStruct memory copyStruc = abi.decode(b, (MyStruct));
+        emit LogStruct(copyStruc);
+        return paramStruc;
+    }
+
+    // input: ["hello",[11,22]] --> not lost any data
+    function structInputAtMemory(MyStruct memory paramStruc) public returns(MyStruct memory){
+        emit LogStruct(paramStruc);
+        bytes memory b = abi.encode(paramStruc);
+        emit LogBytes(b);
+        MyStruct memory copyStruc = abi.decode(b, (MyStruct));
+        emit LogStruct(copyStruc);
+        return paramStruc;
+    }
+
+    // input: ["hello",[11,22]] --> not same
+    function structWithCalldata(MyStruct calldata paramStruc) public returns(MyStruct memory){
+        MyStruct memory copyStruc = paramStruc;
+        copyStruc.name = "world";
+        emit LogStruct(paramStruc);
+        emit LogStruct(copyStruc);
+        return paramStruc;
+    }
+
+    // input: ["hello",[11,22]] --> same
+    function structWithMemory(MyStruct memory paramStruc) public returns(MyStruct memory){
+        MyStruct memory copyStruc = paramStruc;
+        copyStruc.name = "world";
+        emit LogStruct(paramStruc);
+        emit LogStruct(copyStruc);
+        return paramStruc;
+    }
+
+    event LogStr(string);
+
+    // input: "hello world" --> not same
+    function strWithCalldata(string calldata paramStr) public{
+        string memory copyStr = paramStr;
+        copyStr = "copy spreading";
+        emit LogStr(paramStr);
+        emit LogStr(copyStr);
+    }
+
+    // input: "hello world" --> not same
+    function strWithMemory(string memory paramStr) public{
+        string memory copyStr = paramStr;
+        copyStr = "copy spreading";
+        emit LogStr(paramStr);
+        emit LogStr(copyStr);
+    }
+
+    event LogArr(string[]);
+
+    // input: ["a","b","c"] --> not same
+    function strArrWithCalldata(string[] calldata paramArr) public{
+        require(paramArr.length > 0, "the length shuold be bigger than 0");
+        string[] memory copyArr = paramArr;
+        // paramArr[0] = "CHECK"; //compile error: calldata is read-only
+        copyArr[0] = "CHECK";
+        emit LogArr(paramArr);
+        emit LogArr(copyArr);
+    }
+    
+    // input: ["a","b","c"] --> same
+    function strArrWithMemory(string[] memory paramArr) public{
+        require(paramArr.length > 0, "the length shuold be bigger than 0");
+        string[] memory copyArr = paramArr;
+        copyArr[0] = "CHECK";
+        emit LogArr(paramArr);
+        emit LogArr(copyArr);
+    }
+}
+```
+
+ - [issue #9160](https://github.com/ethereum/solidity/issues/9160)
+ - [issue #8360](https://github.com/ethereum/solidity/issues/8360)
+
 
 <br>
 <br>
@@ -1676,6 +1826,46 @@ contract HalfCounter{
 <br>
 <br>
 
+## 🐥 Abstract
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
+
+abstract contract Calculator {
+
+    function implementedFunc() public pure returns(string memory){
+        return "this funcion is implemented";
+    }
+
+    function getResult() public pure virtual returns(uint);
+}
+
+contract Test is Calculator {
+    function getResult() public pure override returns(uint) {
+        uint a = 1;
+        uint b = 2;
+        uint result = a + b;
+        return result;
+    }
+}
+
+contract Main {
+    event LogNum(uint num);
+    event LogStr(string str);
+
+    function doSomething() public {
+       Test t = new Test();
+       emit LogNum(t.getResult());
+       emit LogStr(t.implementedFunc());
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
 ## 🐥 Payable
 
 Functions and addresses declared `payable` can receive `ether` into the contract.
@@ -1810,7 +2000,916 @@ address itAlsoPayableAddr2 = address(payableSenderAddr); // 명시적 캐스팅
 <br>
 <br>
 
-## 🐥 
+## 🐥 Sending Ether (transfer, send, call)
+
+### 🐣 How to send Ether?
+
+You can send Ether to other contracts by
+
+ - `transfer` (2300 gas, throws error)
+ - `send` (2300 gas, returns bool)
+ - `call` (forward all gas or set gas, returns bool)
+
+### 🐣 How to receive Ether?
+
+A contract receiving Ether must have at least one of the functions below
+
+ - `receive() external payable`
+ - `fallback() external payable`
+
+`receive()` is called if msg.data is empty, otherwise fallback() is called.
+
+### 🐣 Which method should you use?
+
+`call` in combination with re-entrancy guard is the recommended method to use after December 2019.
+
+Guard against re-entrancy by
+
+ - making all state changes before calling other contracts
+ - using re-entrancy guard modifier
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract ReceiveEther {
+    /*
+    Which function is called, fallback() or receive()?
+
+           send Ether
+               |
+         msg.data is empty?
+              / \
+            yes  no
+            /     \
+receive() exists?  fallback()
+         /   \
+        yes   no
+        /      \
+    receive()   fallback()
+    */
+
+    // Function to receive Ether. msg.data must be empty
+    receive() external payable {}
+
+    // Fallback function is called when msg.data is not empty
+    fallback() external payable {}
+
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
+
+contract SendEther {
+    function sendViaTransfer(address payable _to) public payable {
+        // This function is no longer recommended for sending Ether.
+        _to.transfer(msg.value);
+    }
+
+    function sendViaSend(address payable _to) public payable {
+        // Send returns a boolean value indicating success or failure.
+        // This function is not recommended for sending Ether.
+        bool sent = _to.send(msg.value);
+        require(sent, "Failed to send Ether");
+    }
+
+    function sendViaCall(address payable _to) public payable {
+        // Call returns a boolean value indicating success or failure.
+        // This is the current recommended method to use.
+        (bool sent, bytes memory data) = _to.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+    }
+}
+```
+
+비록 `transfer()`와 `send()`함수가 `payable` 속성에 의하여 제공이 되지만 gas가 2300제한이 있고 이후 Ethereum 가격의 변동성을 대응하지 못하기 때문에 앞으로는 `call()`함수만 사용하는 것이 권장(recommended)된다.
+
+###### Need to study on the gas refund issues(fallback, receive)
+
+<br>
+<br>
+<br>
+
+## 🐥 fallback
+
+`fallback` is a function that does not take any arguments and does not return anything.
+
+It is executed either when
+
+ - a function that does not exist is called or
+ - Ether is sent directly to a contract but receive() does not exist or msg.data is not empty
+
+fallback has a 2300 gas limit when called by transfer or send.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract Fallback {
+    event Log(uint gas);
+
+    // Fallback function must be declared as external.
+    fallback() external payable {
+        // send / transfer (forwards 2300 gas to this fallback function)
+        // call (forwards all of the gas)
+        emit Log(gasleft()); // msg.gas is deprecated
+    }
+
+    // Helper function to check the balance of this contract
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
+
+contract SendToFallback {
+    function transferToFallback(address payable _to) public payable {
+        _to.transfer(msg.value);
+    }
+
+    function callFallback(address payable _to) public payable {
+        (bool sent, ) = _to.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+    }
+}
+```
+
+
+<br>
+<br>
+<br>
+
+## 🐥 Call
+
+`call` is a low level function to interact with other contracts.
+
+This is the recommended method to use when you're just sending Ether via calling the `fallback` function.
+
+However it is not the recommend way to call existing functions.
+
+<br>
+<br>
+<br>
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract Receiver {
+    event Received(address caller, uint amount, string message);
+
+    fallback() external payable {
+        emit Received(msg.sender, msg.value, "Fallback was called");
+    }
+
+    function foo(string memory _message, uint _x) public payable returns (uint) {
+        emit Received(msg.sender, msg.value, _message);
+
+        return _x + 1;
+    }
+}
+
+contract Caller {
+    event Response(bool success, bytes data);
+
+    // Let's imagine that contract B does not have the source code for
+    // contract A, but we do know the address of A and the function to call.
+    function testCallFoo(address payable _addr) public payable {
+        // You can send ether and specify a custom gas amount
+        (bool success, bytes memory data) = _addr.call{value: msg.value, gas: 5000}(
+            abi.encodeWithSignature("foo(string,uint256)", "call foo", 123)
+        );
+
+        emit Response(success, data);
+    }
+
+    // Calling a function that does not exist triggers the fallback function.
+    function testCallDoesNotExist(address _addr) public {
+        (bool success, bytes memory data) = _addr.call(
+            abi.encodeWithSignature("doesNotExist()")
+        );
+
+        emit Response(success, data);
+    }
+}
+```
+
+## 🐥 Delegatecall
+
+`delegatecall` is a low level function similar to `call`.
+
+When contract A executes delegatecall to contract B, B's code is excuted
+
+with contract A's storage, msg.sender and msg.value.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+// NOTE: Deploy this contract first
+contract B {
+    // NOTE: storage layout must be the same as contract A
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(uint _num) public payable {
+        num = _num;
+        sender = msg.sender;
+        value = msg.value;
+    }
+}
+
+contract A {
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(address _contract, uint _num) public payable {
+        // A's storage is set, B is not modified.
+        (bool success, bytes memory data) = _contract.delegatecall(
+            abi.encodeWithSignature("setVars(uint256)", _num)
+        );
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Function Selector
+
+When a function is called, the first 4 bytes of `calldata` specifies which function to call.
+
+This 4 bytes is called a function selector.
+
+Take for example, this code below. It uses `call` to execute `transfer` on a contract at the address `addr`.
+
+```js
+addr.call(abi.encodeWithSignature("transfer(address,uint256)", 0xSomeAddress, 123))
+```
+
+The first 4 bytes returned from `abi.encodeWithSignature(....)` is the function selector.
+
+Perhaps you can save a tiny amount of gas if you precompute and inline the function selector in your code?
+
+Here is how the function selector is computed.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract FunctionSelector {
+    /*
+    "transfer(address,uint256)"
+    0xa9059cbb
+    "transferFrom(address,address,uint256)"
+    0x23b872dd
+    */
+    function getSelector(string calldata _func) external pure returns (bytes4) {
+        return bytes4(keccak256(bytes(_func)));
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Calling Other Contract (not recomended)
+
+Contract can call other contracts in 2 ways.
+
+The easiest way to is to just call it, like `A.foo(x, y, z)`.
+
+Another way to call other contracts is to use the low-level `call`.
+
+This method is not recommended.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract Callee {
+    uint public x;
+    uint public value;
+
+    function setX(uint _x) public returns (uint) {
+        x = _x;
+        return x;
+    }
+
+    function setXandSendEther(uint _x) public payable returns (uint, uint) {
+        x = _x;
+        value = msg.value;
+
+        return (x, value);
+    }
+}
+
+contract Caller {
+    function setX(Callee _callee, uint _x) public {
+        uint x = _callee.setX(_x);
+    }
+
+    function setXFromAddress(address _addr, uint _x) public {
+        Callee callee = Callee(_addr);
+        callee.setX(_x);
+    }
+
+    function setXandSendEther(Callee _callee, uint _x) public payable {
+        (uint x, uint value) = _callee.setXandSendEther{value: msg.value}(_x);
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Contract that Creates other Contracts
+
+Contracts can be created by other contracts using the `new` keyword. Since 0.8.0, new keyword supports `create2` feature by specifying `salt` options.
+
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract Car {
+    address public owner;
+    string public model;
+    address public carAddr;
+
+    constructor(address _owner, string memory _model) payable {
+        owner = _owner;
+        model = _model;
+        carAddr = address(this);
+    }
+}
+
+contract CarFactory {
+    Car[] public cars;
+
+    function create(address _owner, string memory _model) public {
+        Car car = new Car(_owner, _model);
+        cars.push(car);
+    }
+
+    function createAndSendEther(address _owner, string memory _model) public payable {
+        Car car = (new Car){value: msg.value}(_owner, _model);
+        cars.push(car);
+    }
+
+    function create2(
+        address _owner,
+        string memory _model,
+        bytes32 _salt
+    ) public {
+        Car car = (new Car){salt: _salt}(_owner, _model);
+        cars.push(car);
+    }
+
+    function create2AndSendEther(
+        address _owner,
+        string memory _model,
+        bytes32 _salt
+    ) public payable {
+        Car car = (new Car){value: msg.value, salt: _salt}(_owner, _model);
+        cars.push(car);
+    }
+
+    function getCar(uint _index)
+        public
+        view
+        returns (
+            address owner,
+            string memory model,
+            address carAddr,
+            uint balance
+        )
+    {
+        Car car = cars[_index];
+
+        return (car.owner(), car.model(), car.carAddr(), address(car).balance);
+    }
+}
+```
+
+위 예시에서는 `contract CarFactory`가 `contract Car`을 `new` 키워드를 통해 호출하여 사용하고 있는데, 만일 `contract CarFactory`가 블록체인 네트워크에 배포가 되면 `contract Car`의 인스턴스 또한 배포가되고 `contract Car`의 state 변수 또한 할당 되어진다. 즉, 또 다른 주소가 생긴다.
+
+아래 예시를 통해 확인해보자.
+
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Sample{}
+
+contract Main{
+    function checkAddress() public returns(address, address){
+        address thisAddr = address(this);
+        address sampleAddr = address(new Sample());
+        return (thisAddr, sampleAddr);
+    }
+}
+/*  
+	"0": "address: 0xfC01E11F9eC3E3D3831C010227D84Fa3E65b2FFB",
+	"1": "address: 0xb7b6b4aA81A6b0Dd20500cd19a485a95Fa206687"
+*/
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Try Catch
+
+`try / catch` can only catch errors from external function calls and contract creation.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+// External contract used for try / catch examples
+contract Foo {
+    address public owner;
+
+    constructor(address _owner) {
+        require(_owner != address(0), "invalid address");
+        assert(_owner != 0x0000000000000000000000000000000000000001);
+        owner = _owner;
+    }
+
+    function myFunc(uint x) public pure returns (string memory) {
+        require(x != 0, "require failed");
+        return "my func was called";
+    }
+}
+
+contract Bar {
+    event Log(string message);
+    event LogBytes(bytes data);
+
+    Foo public foo;
+
+    constructor() {
+        // This Foo contract is used for example of try catch with external call
+        foo = new Foo(msg.sender);
+    }
+
+    // Example of try / catch with external call
+    // tryCatchExternalCall(0) => Log("external call failed")
+    // tryCatchExternalCall(1) => Log("my func was called")
+    function tryCatchExternalCall(uint _i) public {
+        try foo.myFunc(_i) returns (string memory result) {
+            emit Log(result);
+        } catch {
+            emit Log("external call failed");
+        }
+    }
+
+    // Example of try / catch with contract creation
+    // tryCatchNewContract(0x0000000000000000000000000000000000000000) => Log("invalid address")
+    // tryCatchNewContract(0x0000000000000000000000000000000000000001) => LogBytes("")
+    // tryCatchNewContract(0x0000000000000000000000000000000000000002) => Log("Foo created")
+    function tryCatchNewContract(address _owner) public {
+        try new Foo(_owner) returns (Foo foo) {
+            // you can use variable foo here
+            emit Log("Foo created");
+        } catch Error(string memory reason) {
+            // catch failing revert() and require()
+            emit Log(reason);
+        } catch (bytes memory reason) {
+            // catch failing assert()
+            emit LogBytes(reason);
+        }
+    }
+}
+```
+
+
+<br>
+<br>
+<br>
+
+## 🐥 Import
+
+You can import local and external files in Solidity.
+
+### 🐣 Local
+
+Here is our folder structure.
+
+```js
+├── Import.sol
+└── Foo.sol
+```
+
+`Foo.sol`
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+struct Point {
+    uint x;
+    uint y;
+}
+
+error Unauthorized(address caller);
+
+function add(uint x, uint y) pure returns (uint) {
+    return x + y;
+}
+
+contract Foo {
+    string public name = "Foo";
+}
+```
+
+`Import.sol`
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+// import Foo.sol from current directory
+import "./Foo.sol";
+
+// import {symbol1 as alias, symbol2} from "filename";
+import {Unauthorized, add as func, Point} from "./Foo.sol";
+
+contract Import {
+    // Initialize Foo.sol
+    Foo public foo = new Foo();
+
+    // Test Foo.sol by getting it's name.
+    function getFooName() public view returns (string memory) {
+        return foo.name();
+    }
+}
+```
+
+### 🐣 External
+
+You can also import from GitHub by simply copying the url
+
+```js
+// https://github.com/owner/repo/blob/branch/path/to/Contract.sol
+import "https://github.com/owner/repo/blob/branch/path/to/Contract.sol";
+
+// Example import ECDSA.sol from openzeppelin-contract repo, release-v4.5 branch
+// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.5/contracts/utils/cryptography/ECDSA.sol
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.5/contracts/utils/cryptography/ECDSA.sol";
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Library
+
+Libraries are similar to contracts, but you can't declare any state variable and you can't send ether.
+
+A library is embedded into the contract if all library functions are internal.
+
+Otherwise the library must be deployed and then linked before the contract is deployed.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+library SafeMath {
+    function add(uint x, uint y) internal pure returns (uint) {
+        uint z = x + y;
+        require(z >= x, "uint overflow");
+
+        return z;
+    }
+}
+
+library Math {
+    function sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
+        // else z = 0 (default value)
+    }
+}
+
+contract TestSafeMath {
+    using SafeMath for uint;
+
+    uint public MAX_UINT = 2**256 - 1;
+
+    function testAdd(uint x, uint y) public pure returns (uint) {
+        return x.add(y);
+    }
+
+    function testSquareRoot(uint x) public pure returns (uint) {
+        return Math.sqrt(x);
+    }
+}
+
+// Array function to delete element at index and re-organize the array
+// so that their are no gaps between the elements.
+library Array {
+    function remove(uint[] storage arr, uint index) public {
+        // Move the last element into the place to delete
+        require(arr.length > 0, "Can't remove from empty array");
+        arr[index] = arr[arr.length - 1];
+        arr.pop();
+    }
+}
+
+contract TestArray {
+    using Array for uint[];
+
+    uint[] public arr;
+
+    function testArrayRemove() public {
+        for (uint i = 0; i < 3; i++) {
+            arr.push(i);
+        }
+
+        arr.remove(1);
+
+        assert(arr.length == 2);
+        assert(arr[0] == 0);
+        assert(arr[1] == 2);
+    }
+
+    function getArr() view public returns(uint[] memory){
+        return arr;
+    }
+}
+```
+여기서 `contract TestSafeMath`를 아래와 같이 다른 방식으로 사용할 수도 있다.
+
+```js
+contract TestSafeMath {
+    using SafeMath for uint;
+    using Math for uint; // add for using "x.sqrt()"
+
+    uint public MAX_UINT = 2**256 - 1;
+
+    function testAdd(uint x, uint y) public pure returns (uint) {
+        return SafeMath.add(x, y); // return x.add(y);
+    }
+
+    function testSquareRoot(uint x) public pure returns (uint) {
+        return x.sqrt(); // return Math.sqrt(x);
+    }
+}
+```
+
+물론 `Library`를 자료형에 할당하는 과정에서 같은 이름의 함수가 중복이 되면 컴파일 에러가 발생한다.
+
+```js
+library SafeMath {
+    function add(uint x, uint y) internal pure returns (uint) {
+        uint z = x + y;
+        require(z >= x, "uint overflow");
+
+        return z;
+    }
+}
+
+library DupMath {
+    function add(uint x, uint y) internal pure returns (uint) {
+        uint z = x + y + 10;
+        require(z >= x, "uint overflow");
+
+        return z;
+    }
+}
+
+contract TestSafeMath {
+    using SafeMath for uint;
+    using DupMath for uint;
+
+    uint public MAX_UINT = 2**256 - 1;
+
+    function testAdd(uint x, uint y) public pure returns (uint) {
+        return x.add(y); // compile error occured here.
+    }
+}
+```
+
+`Library`만 따로 파일로 나누어 `import`하여 사용할 수도 있다.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+import "./lib.sol";
+
+contract TestSafeMath {
+    using SafeMath for uint;
+
+    uint public MAX_UINT = 2**256 - 1;
+
+    function testAdd(uint x, uint y) public pure returns (uint) {
+        return x.add(y);
+    }
+
+    function testSquareRoot(uint x) public pure returns (uint) {
+        return Math.sqrt(x);
+    }
+}
+
+contract TestArray {
+    using Array for uint[];
+
+    uint[] public arr;
+
+    function testArrayRemove() public {
+        for (uint i = 0; i < 3; i++) {
+            arr.push(i);
+        }
+
+        arr.remove(1);
+
+        assert(arr.length == 2);
+        assert(arr[0] == 0);
+        assert(arr[1] == 2);
+    }
+
+    function getArr() view public returns(uint[] memory){
+        return arr;
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 ABI Decode
+
+`abi.encode` encodes data into `bytes`.
+
+`abi.decode `decodes `byte`s back into data.
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract AbiDecode {
+    struct MyStruct {
+        string name;
+        uint[2] nums;
+    }
+
+    /* Let's input below to test: 
+           100
+           0xad153c5e12dB58a47f2454691b26582A430803fB
+           [50, 55]
+           ["hello",[11,22]]
+    */
+    function encode(
+        uint x,
+        address addr,
+        uint[] calldata arr,
+        MyStruct calldata myStruct
+    ) external pure returns (bytes memory) {
+        return abi.encode(x, addr, arr, myStruct);
+    }
+
+    function decode(bytes calldata data)
+        external
+        pure
+        returns (
+            uint x,
+            address addr,
+            uint[] memory arr,
+            MyStruct memory myStruct
+        )
+    {
+        // (uint x, address addr, uint[] memory arr, MyStruct myStruct) = ...
+        (x, addr, arr, myStruct) = abi.decode(data, (uint, address, uint[], MyStruct));
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Hashing with Keccak256
+
+`keccak256` computes the Keccak-256 hash of the input.
+
+Some use cases are:
+
+ - Creating a deterministic unique ID from a input
+ - Commit-Reveal scheme
+ - Compact cryptographic signature (by signing the hash instead of a larger input)
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+contract HashFunction {
+    function hash(
+        string memory _text,
+        uint _num,
+        address _addr
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_text, _num, _addr));
+    }
+
+    // Example of hash collision
+    // Hash collision can occur when you pass more than one dynamic data type
+    // to abi.encodePacked. In such case, you should use abi.encode instead.
+    function collision(string memory _text, string memory _anotherText)
+        public
+        pure
+        returns (bytes32)
+    {
+        // encodePacked(AAA, BBB) -> AAABBB
+        // encodePacked(AA, ABBB) -> AAABBB
+        return keccak256(abi.encodePacked(_text, _anotherText));
+    }
+}
+
+contract GuessTheMagicWord {
+    bytes32 public answer =
+        0x60298f78cc0b47170ba79c10aa3851d7648bd96f2f8e46a19dbc777c36fb0c00;
+
+    // Magic word is "Solidity"
+    function guess(string memory _word) public view returns (bool) {
+        return keccak256(abi.encodePacked(_word)) == answer;
+    }
+}
+```
+
+<br>
+<br>
+<br>
+
+## 🐥 Gas Saving Techniques
+
+Some gas saving techniques.
+
+ - Replacing memory with calldata
+ - Loading state variable to memory
+ - Replace for loop i++ with ++i
+ - Caching array elements
+ - Short circuit
+
+```js
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
+
+// gas golf
+contract GasGolf {
+    // start - 50908 gas
+    // use calldata - 49163 gas
+    // load state variables to memory - 48952 gas
+    // short circuit - 48634 gas
+    // loop increments - 48244 gas
+    // cache array length - 48209 gas
+    // load array elements to memory - 48047 gas
+    uint public total;
+
+    // start - not gas optimized : spent 50908
+    function notOptimizedSumIfEvenAndLessThan99(uint[] memory nums) external {
+        for (uint i = 0; i < nums.length; i += 1) {
+            bool isEven = nums[i] % 2 == 0;
+            bool isLessThan99 = nums[i] < 99;
+            if (isEven && isLessThan99) {
+                total += nums[i];
+            }
+        }
+    }
+
+    // gas optimized : spent 30969
+    // [1, 2, 3, 4, 5, 100]
+    function sumIfEvenAndLessThan99(uint[] calldata nums) external {
+        uint _total = total;
+        uint len = nums.length;
+
+        for (uint i = 0; i < len; ++i) {
+            uint num = nums[i];
+            if (num % 2 == 0 && num < 99) {
+                _total += num;
+            }
+        }
+
+        total = _total;
+    }
+}
+```
 
 <br>
 <br>
@@ -1830,32 +2929,19 @@ address itAlsoPayableAddr2 = address(payableSenderAddr); // 명시적 캐스팅
 
 ## 🐥 
 
-<br>
-<br>
-<br>
+###### global 변수 `msg`에 대해서 자세히 알아보기
 
-## 🐥 
 
 <br>
 <br>
 <br>
+<br>
+<br>
+<br>
+<hr>
 
-## 🐥 
+# 🐓 Question
 
-<br>
-<br>
-<br>
+## 🐥 Remix IDE input Tuple arguments method
 
-## 🐥 
-
-<br>
-<br>
-<br>
-
-## 🐥 
-
-<br>
-<br>
-<br>
-
-## 🐥 
+https://remix-ide.readthedocs.io/en/latest/udapp.html
