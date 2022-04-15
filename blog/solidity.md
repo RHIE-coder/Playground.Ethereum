@@ -5,8 +5,6 @@
 :egg:
 :fried_egg: 
 
-https://www.tutorialspoint.com/solidity/solidity_interfaces.htm
-
 https://solidity-by-example.org/
 
 
