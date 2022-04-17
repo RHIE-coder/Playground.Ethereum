@@ -2943,3 +2943,7 @@ contract GasGolf {
 ## 🐥 Remix IDE input Tuple arguments method
 
 https://remix-ide.readthedocs.io/en/latest/udapp.html
+
+## 🐥 `tx.origin` and `msg.sender`
+
+https://ethereum.stackexchange.com/questions/1891/whats-the-difference-between-msg-sender-and-tx-origin

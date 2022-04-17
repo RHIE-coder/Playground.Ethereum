@@ -757,7 +757,6 @@ bzz: Bzz {
     console.log(get_result) // 10;
 })()
 ```
-
-#### - 유의사항
+ - 유의사항
 
 `Ethereum "write" transaction do not have return values`
