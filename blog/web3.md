@@ -749,7 +749,7 @@ bzz: Bzz {
     const contract_address = '0x6c28Cef55caE63Ade447B81107A199c55FC9E6d6';
     const web3 = new Web3(new Web3.providers.HttpProvider(url));
     const abi = JSON.parse(await fs.readFile("../build/contracts/hello.json"));
-    const helloContract = new web3.eth.Contract(abi, contract_address);
+    const helloContract = new web3.eth.Contract(abi.abi, contract_address);
     await helloContract.methods.setNum(10).call(); // just get return value if the return value is exists
     const set_result = await helloContract.methods.setNum(10).send({from:account});
     const get_result = await helloContract.methods.getNum().call();

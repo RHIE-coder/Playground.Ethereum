@@ -25,6 +25,7 @@ https://solidity-by-example.org/
 
 🐔 목차 🐓 대주제 🐥 중주제 🐣 소주제 🥚 본문 🍳 자세히 
 
+
 # 🐓 Solidity By Example
 
 ## 🐥 Hello World
@@ -2912,31 +2913,11 @@ contract GasGolf {
 <br>
 <br>
 <br>
-
-## 🐥 
-
-<br>
-<br>
-<br>
-
-## 🐥 
-
-<br>
-<br>
-<br>
-
-## 🐥 
-
-###### global 변수 `msg`에 대해서 자세히 알아보기
-
-
-<br>
-<br>
-<br>
 <br>
 <br>
 <br>
 <hr>
+
 
 # 🐓 Question
 
