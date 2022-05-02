@@ -6,4 +6,4 @@
 
 // console.log(add(10, 20));
 
-import mocha from 'mocha';
+// import mocha from 'mocha'; //need @types/mocha
