@@ -1,15 +1,15 @@
 class Sample {
-    protected num : number;
-    // public(기본값), private, protected
-    
-    constructor(num : number){
-        this.num = num;
-    }
+  protected num: number;
+  // public(기본값), private, protected
+
+  constructor(num: number) {
+    this.num = num;
+  }
 }
 
-/*  
-interface Notebook { 
-  readonly CPU: string; 
+/*
+interface Notebook {
+  readonly CPU: string;
   readonly RAM: string;
 };
 
@@ -43,9 +43,9 @@ const button:ButtonInterface = {
 --> 함수타입
 // 펙토리얼 함수 인터페이스 정의
 interface FactorialInterface {
-  (n: number): number;  
+  (n: number): number;
 }
-​
+
 // 인터페이스를 함수 타입에 설정했기에 별도의 매개변수, 리턴 값 설정을 생략해도 됩니다.
 const facto: FactorialInterface = (n) => {
   if (n === 0) { return 0; }
@@ -53,9 +53,6 @@ const facto: FactorialInterface = (n) => {
   return n * facto(n - 1);
 }
 
-
 */
 
-export = async function(){
-
-}
+export = async function () {};
