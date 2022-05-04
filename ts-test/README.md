@@ -15,3 +15,9 @@ Steps to run this project:
 npm i -g sqlite3    
 cp -r $(npm config get prefix)/node_modules/sqlite3 ./node_modules
 ```
+
+https://yamoo9.gitbook.io/typescript/
+
+https://typescript-kr.github.io/pages/decorators.html
+
+https://trufflesuite.com/docs/truffle/distributed-ledger-support/working-with-hyperledger-evm/
