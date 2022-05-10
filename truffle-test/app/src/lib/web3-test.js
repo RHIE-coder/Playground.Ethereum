@@ -2,10 +2,10 @@ const web3Handler = require("./web3-handler");
 
 (async () => {
     options = {
-        contractAddress:"0xCb3B96104bE5aBfF42701C27105BDe1173f2221b",
+        contractAddress:"0x255536Ed2E4d2bB8Fef58D26959F85146c79dD2a",
         accountAddress:"0x5fD31f16Da87cCB3D34CEC4F08FE4be090B8F04D",
-        abiPath:"../truffle/build/contracts",
-        abiName:"Test",
+        abiPath:"../../../truffle/build/contracts",
+        abiName:"Storage",
     }
     const handler = new web3Handler(options);
     const contract = await handler.getInstance();
