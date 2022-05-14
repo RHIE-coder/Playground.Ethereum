@@ -175,9 +175,16 @@ eth.getBalance(eth.accounts[2]) //7000000000000000000
 
 We need private keys, but Geth does not offer commands to export private key.
 
-#### 1. Create JS file : `eth/go-ethereum/get-pri-key.js`
+#### 1. Import `keythereum` module
+
+```sh
+npm i -D keythereum
+```
+
+#### 2. Create JS file : `eth/go-ethereum/get-pri-key.js`
 
 ```js
+/* eslint-disable prettier/prettier */
 const keythereum = require("keythereum");
 const path = require("path");
 const fs = require("fs");
@@ -314,7 +321,7 @@ cd contracts
 npm i -D solc@0.8.13
 ```
 
-#### 3. Create `bin` and `abi`
+#### 3. Create `bin` and `abi`, using `solc` module.
 
 ```sh
 npm run solc
@@ -323,6 +330,17 @@ npm run solc
 <br><br><br><br><br>
 
 ## [ 5 ] Deploy Smart Contract
+
+#### 1. Import `Web3` module
+
+```sh
+npm i --save web3
+```
+```sh
+npm i -D @types/web3
+```
+
+#### 2. 
 
 ```sh
 const RhitherContract =  eth.contract("./contracts/abi/eth_go-ethereum_contracts_RhitherCoin_sol_RhitherCoin.abi")

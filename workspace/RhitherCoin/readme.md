@@ -59,7 +59,7 @@ solidity ^0.8.0
 #### 1. Import base modules
 
 ```sh
-./project-init.sh
+npm install
 ```
 
 #### 2. Create a directory before you begin.
