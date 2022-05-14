@@ -17,7 +17,8 @@
       "nyc:run": "nyc ts-mocha test/**/*.spec.ts",
       "eslint:init": "eslint --init",
       "eslint:fix": "eslint src/**/*.ts --fix",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm": "typeorm-ts-node-commonjs",
+      "solc": "npx solc -p --bin eth/go-ethereum/contracts/RhitherCoin.sol --abi eth/go-ethereum/contracts/RhitherCoin.sol -o eth/go-ethereum/contracts/build"
    },
    "author": "rhie-coder",
    "license": "MIT",

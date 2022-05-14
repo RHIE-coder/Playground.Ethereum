@@ -5,7 +5,7 @@
   "main": "index.js",
   "keywords": [
     "ethereum",
-    "coin"
+    "nft"
   ],
   "scripts": {
     "start": "ts-node src/index.ts",

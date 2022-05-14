@@ -18,9 +18,6 @@ We will not use remix IDE to understand how to fundamentally develop Ethereum-ba
  - Use [Hardhat](https://hardhat.org/) deploy smart contract `local network`.
  - Use [Hardhat](https://hardhat.org/) deploy smart contract `test network`.
  - Use [Hardhat](https://hardhat.org/) deploy smart contract to `test network` via [infura.io](https://infura.io/).
- - Use [Web3](https://web3js.readthedocs.io/) deploy smart contract to `local network`.
- - Use [Web3](https://web3js.readthedocs.io/) deploy smart contract to `test network`.
- - Use [Web3](https://web3js.readthedocs.io/) deploy smart contract to `test network` via [infura.io](https://infura.io/).
  
 ## 2. Prerequisite
 
@@ -43,7 +40,12 @@ geth version : 1.10.15-stable-8be800ff
 solidity ^0.8.0
 ```
 
+<br><br><br><br><br>
+
 ## 4. Running DEMO
+
+
+<br><br><br><br><br>
 
 ## 5. Getting Started
 
@@ -57,41 +59,200 @@ mkdir hardhat
 mkdir truffle
 ```
 
-### - Geth
+<br><br><br><br><br><hr>
+
+### [ 1 ] Geth
+
+#### - Build Private Network(`Local Network`)
 
  1. Go to `/eth/go-ethereum`
 
- 2. The `solc` module is required to compile source files written in `solidity`
+ 2. Create 3 accounts and password files
+
+ - miner
+```sh
+geth account new --datadir data
+--> Public address of the key:   0x9E199512339F8Ed8182A92F52D51EaE90ACeCD73
+```
+ - account1
+```sh
+geth account new --datadir data
+--> Public address of the key:   0xd6c36E40DE2d010b7325386Db5975e99a082505d
+```
+ - account2
+```
+geth account new --datadir data
+--> Public address of the key:   0xA2401d5935191E50C6D1a49450dc0aA1d3247d5e
+```
+
+The directory `data/keystore` will be created.
+
+ - check accounts
+
+```sh
+geth account list --datadir data
+```
+ 4. Create password files `miner.txt`, `account1.txt`,`account2.txt`, and input the password text entered on the terminal when we created the account.
+
+ 5. Create genesis json
+
+ - `genesis.json`
+
+```js
+{
+  "config": {
+    "chainId": 15,
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "ethash": {}
+  },
+  "difficulty": "10",
+  "gasLimit": "8000000",
+  "alloc": {
+    "9e199512339f8ed8182a92f52d51eae90acecd73": { "balance": "0" },
+    "d6c36e40de2d010b7325386db5975e99a082505d": { "balance": "500000" },
+    "a2401d5935191e50c6d1a49450dc0aa1d3247d5e": { "balance": "500000" }
+  }
+}
+```
+ 6. Create genesis block
+
+```sh
+geth init --datadir data genesis.json
+```
+
+The `data/geth` directory will be created.
+
+ 7. Running as `local network` via `miner` (need 2 terminals)
+
+<!-- 
+```sh
+geth --networkid 15 --nodiscover --maxpeers 0 --datadir data --http --allow-insecure-unlock --mine console
+``` -->
+
+<br><br><br>
+
+##### `terminal A`
+
+```sh
+geth --datadir data --http --http.api personal,eth,net,web3 --dev --allow-insecure-unlock --unlock 0x9e199512339f8ed8182a92f52d51eae90acecd73 --keystore data/keystore --password miner.txt console
+```
+As we can see the output text in terminal, we will get network(chainid=15) and http server(endpoint=127.0.0.1:8545)
+
+ - (1) check accounts
+
+```sh
+eth.accounts
+```
+
+ - (2) check balances
+
+```sh
+eth.getBalance(eth.accounts[0]) //0
+eth.getBalance(eth.accounts[1]) //500000
+eth.getBalance(eth.accounts[2]) //500000
+```
+
+<br><br><br>
+
+##### `terminal B`
+
+ - (3) attach to `local network`
+
+```sh
+geth attach http://localhost:8545
+```
+
+ - (4) unlock account1
 
 ```
-npm i -D solc@0.8.13
+personal.unlockAccount(eth.accounts[1])
 ```
 
- 3. Create directory and get inside
+ - (5) send transaction
 
+```sh
+eth.sendTransaction({from: eth.accounts[1],to: eth.accounts[2], value: "20000"})
 ```
+
+ - (6) check balances
+
+```sh
+eth.getBalance(eth.accounts[1]) //500000
+eth.getBalance(eth.accounts[2]) //500000
+```
+We need to mine transactions.
+
+<br><br><br>
+
+##### `terminal A`
+
+ - (7) The network still has one block(genesis block)
+
+```sh
+eth.blockNumber //0
+```
+ - (8) We can see the genesis block using below command.
+
+```sh
+eth.getBlock(0)
+```
+ - (9)  Start mining, afterwhile stop mining.
+
+```sh
+miner.start(1)
+```
+
+```sh
+miner.stop()
+```
+
+ - (10) Check block number. If it's still `0`, mining again.
+
+```sh
+eth.blockNumber
+```
+
+ - (11) We can see transactions list at `second block`
+
+```sh
+eth.getBlock(1)
+```
+
+ - (12) Let's see balances again
+
+```sh
+eth.getBalance(eth.accounts[0]) //6000000000000021000
+eth.getBalance(eth.accounts[1]) //459000
+eth.getBalance(eth.accounts[2]) //520000
+```
+
+
+<br><br><br><br><br>
+
+#### - Create Smart Contract
+
+ 1. Go to `/eth/go-ethereum`
+
+ 2. Create directory and get inside
+
+```sh
 mkdir contracts
 cd contracts
 ```
 
- 4. Create `SafeMath.sol`, `Context.sol`, `IERC20.sol`, `IERC20Metadata.sol`,`ERC20.sol`, `RhitherCoin.sol`
-
- - [Reference - Open Zeppelin](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20)
-
- - `utils/SafeMath.sol`
+ 3. Create `utils/SafeMath.sol`
 
 ```sol
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
-/**
- * @author rhie-coder
- * @dev To prevent underflow or overflow.
- * We need to add the `unchecked` keyword to use `require`.
- * We don't need SafeMath anymore since ^0.8.0, 
- * because the overflow checking is built-in function now (occur `revert`).
- */
 library SafeMath {
 
     function add(uint256 num1, uint256 num2) external pure returns (uint256) {
@@ -139,8 +300,8 @@ library SafeMath {
 }
 ```
 
- - `utils/Context.sol`
-
+ 4. Create `utils/Context.sol`
+ 
 ```sol
 // SPDX-License-Identifier: MIT
 
@@ -156,17 +317,13 @@ abstract contract Context {
     }
 }
 ```
-
- - `extensions/IERC20Metadata.sol`
-
+ 5. Create `extensions/IERC20Metadata.sol`
+ 
 ```sol
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
-/** 
- * @dev Interface for the optional metadata functions from the ERC20 standard.
- */ 
 interface IERC20Metadata{
 
     function name() external view returns (string memory);
@@ -177,16 +334,13 @@ interface IERC20Metadata{
 }
 ```
 
- - `IERC20.sol`
+ 6. Create `IERC20.sol`
 
 ```sol
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
 interface IERC20 {
 
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -211,7 +365,7 @@ interface IERC20 {
 }
 ```
 
- - `ERC20.sol`
+ 7. Create `ERC20.sol`
 
 ```sol
 // SPDX-License-Identifier: MIT
@@ -223,19 +377,12 @@ import "./extensions/IERC20Metadata.sol";
 import "./utils/Context.sol";
 import "./utils/SafeMath.sol";
 
-/**
- * @author rhie-coder
- * @dev It has removed hook functions.
- * Added Modifiers and the SafeMath library version.
- */
 contract ERC20 is Context, IERC20, IERC20Metadata {
 
-    // These are defined in {IERC20}
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
     uint256 private _totalSupply;
 
-    // These are defined in {IERC20Metadata}
     string private _name;
     string private _symbol;
 
@@ -348,8 +495,8 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     }
 }
 ```
-
- - `RhitherCoin.sol`
+ 
+ 8. Create `RhitherCoin.sol`
 
 ```sol
 // SPDX-License-Identifier: MIT
@@ -367,3 +514,31 @@ contract RhitherCoin is ERC20 {
     }
 }
 ```
+
+ - [Reference - Open Zeppelin](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20)
+
+<br><br><br><br><br>
+
+#### - Compile Smart Contracts
+
+ 1. Go to `/eth/go-ethereum/contracts`
+
+ 2. The `solc` module is required to compile source files written in `solidity`
+ 
+```sh
+npm i -D solc@0.8.13
+```
+
+ 3. Create `bin` and `abi`
+
+```sh
+npm run solc
+```
+
+<br><br><br><br><br>
+
+#### - Deploy Smart Contract to `local network`
+
+ 1. Go to `/eth/go-ethereum`
+
+ 2. install 
